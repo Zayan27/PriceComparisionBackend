@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Typography, Input, Button, Tag, Space, Drawer, Row, Col, Statistic, List, Avatar, DatePicker } from 'antd';
+import { Table, Card, Typography, Input, Button, Tag, Space, Drawer, Row, Col, Statistic, List, Avatar, DatePicker, Select } from 'antd';
 import { SearchOutlined, FallOutlined, RiseOutlined, ShopOutlined, TrophyOutlined, BarChartOutlined, FilterOutlined } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getPriceComparison, type PriceComparisonItem } from '../../api/comparisonApi';
@@ -7,6 +7,7 @@ import type { Dayjs } from 'dayjs';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const PriceComparison: React.FC = () => {
   const [data, setData] = useState<PriceComparisonItem[]>([]);
@@ -15,6 +16,7 @@ const PriceComparison: React.FC = () => {
   
   // Date filter state
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+  const [minQuotes, setMinQuotes] = useState<number | undefined>(undefined);
 
   // Pagination state
   const [total, setTotal] = useState(0);
@@ -25,7 +27,7 @@ const PriceComparison: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<PriceComparisonItem | null>(null);
 
-  const fetchComparison = async (page = 1, limit = 10, sku?: string, dates?: [string, string] | null) => {
+  const fetchComparison = async (page = 1, limit = 10, sku?: string, dates?: [string, string] | null, quotes?: number) => {
     setLoading(true);
     try {
       const params: any = { page, limit };
@@ -33,6 +35,9 @@ const PriceComparison: React.FC = () => {
       if (dates) {
         params.startDate = dates[0];
         params.endDate = dates[1];
+      }
+      if (quotes) {
+        params.minQuotes = quotes;
       }
 
       const response = await getPriceComparison(params);
@@ -48,20 +53,26 @@ const PriceComparison: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchComparison(currentPage, pageSize, skuSearch, dateRange);
+    fetchComparison(currentPage, pageSize, skuSearch, dateRange, minQuotes);
   }, [currentPage, pageSize]);
 
   const handleSearch = (value: string) => {
     setSkuSearch(value);
     setCurrentPage(1);
-    fetchComparison(1, pageSize, value, dateRange);
+    fetchComparison(1, pageSize, value, dateRange, minQuotes);
   };
 
   const handleDateChange = (dates: any, dateStrings: [string, string]) => {
     const range = dates ? dateStrings : null;
     setDateRange(range);
     setCurrentPage(1);
-    fetchComparison(1, pageSize, skuSearch, range);
+    fetchComparison(1, pageSize, skuSearch, range, minQuotes);
+  };
+
+  const handleQuotesChange = (value: number | undefined) => {
+    setMinQuotes(value);
+    setCurrentPage(1);
+    fetchComparison(1, pageSize, skuSearch, dateRange, value);
   };
 
   const handleCompareClick = (record: PriceComparisonItem) => {
@@ -149,6 +160,17 @@ const PriceComparison: React.FC = () => {
           <Space>
             <FilterOutlined style={{ color: '#bfbfbf' }} />
             <RangePicker onChange={handleDateChange} placeholder={['Start Date', 'End Date']} />
+            <Select 
+              placeholder="Min Quotes" 
+              allowClear 
+              style={{ width: 150 }}
+              onChange={handleQuotesChange}
+            >
+              <Option value={1}>1+ Quotes</Option>
+              <Option value={2}>2+ Quotes</Option>
+              <Option value={3}>3+ Quotes</Option>
+              <Option value={5}>5+ Quotes</Option>
+            </Select>
           </Space>
         </div>
 
@@ -178,7 +200,7 @@ const PriceComparison: React.FC = () => {
             <span>Detailed Vendor Analysis</span>
           </Space>
         }
-        width={600}
+        size="large"
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}

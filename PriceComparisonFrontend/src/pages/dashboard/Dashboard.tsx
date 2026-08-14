@@ -56,13 +56,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <Alert 
-        title="Displaying Placeholder Data" 
-        description="Because the backend currently lacks an aggregation endpoint for dashboard metrics, this view is powered by a frontend service placeholder. It will cleanly accept real data once the API is built."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
@@ -152,7 +145,7 @@ const Dashboard: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <Card title="Invoice Volume Trend" bordered={false} style={{ borderRadius: 8, height: '100%' }}>
+          <Card title="Invoice Volume Trend" variant="borderless" style={{ borderRadius: 8, height: '100%' }}>
             <div style={{ height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data.invoiceTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -173,7 +166,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="Vendor Distribution" bordered={false} style={{ borderRadius: 8, height: '100%' }}>
+          <Card title="Vendor Distribution" variant="borderless" style={{ borderRadius: 8, height: '100%' }}>
             <div style={{ height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

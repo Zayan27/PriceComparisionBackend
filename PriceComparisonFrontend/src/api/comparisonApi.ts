@@ -39,7 +39,16 @@ export interface PriceComparisonResponse {
   };
 }
 
-export const getPriceComparison = async (params: { sku?: string, startDate?: string, endDate?: string, page?: number, limit?: number }): Promise<PriceComparisonResponse> => {
+export const getPriceComparison = async (params: { 
+  sku?: string, 
+  startDate?: string, 
+  endDate?: string, 
+  minQuotes?: number,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc',
+  page?: number, 
+  limit?: number 
+}): Promise<PriceComparisonResponse> => {
   const response = await apiClient.get<PriceComparisonResponse>('/analytics/price-comparison', { params });
   return response.data;
 };
