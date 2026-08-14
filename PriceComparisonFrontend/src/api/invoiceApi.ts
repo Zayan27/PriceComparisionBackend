@@ -43,8 +43,21 @@ export const getInvoices = async (params: any): Promise<InvoicesResponse> => {
   return response.data;
 };
 
-// Hit the POST API for ingestion
+// Hit the POST API for batch directory ingestion
 export const ingestDirectory = async (directory?: string): Promise<any> => {
   const response = await apiClient.post('/invoices/ingest-directory', { directory });
+  return response.data;
+};
+
+// Hit the POST API for single file upload
+export const uploadInvoiceFile = async (file: File): Promise<any> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await apiClient.post('/invoices/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };

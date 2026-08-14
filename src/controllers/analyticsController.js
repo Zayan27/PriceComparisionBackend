@@ -1,4 +1,4 @@
-import { getPriceComparison } from '../services/analyticsService.js';
+import { getPriceComparison, getDashboardMetrics } from '../services/analyticsService.js';
 
 /**
  * GET /api/analytics/price-comparison
@@ -27,4 +27,21 @@ export const priceComparison = async (req, res, next) => {
   }
 };
 
-export default { priceComparison };
+/**
+ * GET /api/analytics/dashboard
+ * Dashboard metrics
+ */
+export const dashboard = async (req, res, next) => {
+  try {
+    const result = await getDashboardMetrics();
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { priceComparison, dashboard };

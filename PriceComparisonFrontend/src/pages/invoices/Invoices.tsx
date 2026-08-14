@@ -15,14 +15,17 @@ const Invoices: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchSerial, setSearchSerial] = useState('');
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
-  const fetchInvoices = async (page = 1, limit = 10, serialNumber = '') => {
+  const fetchInvoices = async (page = 1, limit = 10, serialNumber = '', dates: [string, string] | null = null) => {
     setLoading(true);
     try {
       const response = await getInvoices({
         page,
         limit,
-        serialNumber: serialNumber || undefined
+        serialNumber: serialNumber || undefined,
+        startDate: dates ? dates[0] : undefined,
+        endDate: dates ? dates[1] : undefined
       });
       if (response.success) {
         setInvoices(response.data.invoices);
@@ -36,13 +39,21 @@ const Invoices: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchInvoices(currentPage, pageSize, searchSerial);
-  }, [currentPage, pageSize]);
+    fetchInvoices(currentPage, pageSize, searchSerial, dateRange);
+  }, [currentPage, pageSize, dateRange]);
 
   const handleSearch = (value: string) => {
     setSearchSerial(value);
     setCurrentPage(1); // reset to page 1 on search
-    fetchInvoices(1, pageSize, value);
+  };
+
+  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
+    if (dates) {
+      setDateRange(dateStrings);
+    } else {
+      setDateRange(null);
+    }
+    setCurrentPage(1);
   };
 
   const columns = [
@@ -126,7 +137,7 @@ const Invoices: React.FC = () => {
             onSearch={handleSearch}
             style={{ width: 250 }}
           />
-          <RangePicker />
+          <RangePicker onChange={handleDateChange} />
           <Button type="default" icon={<SearchOutlined />}>Advanced Filters</Button>
         </div>
 
