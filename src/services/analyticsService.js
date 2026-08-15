@@ -184,8 +184,8 @@ export async function getDashboardMetrics() {
     { $unwind: "$items" },
     { $group: {
         _id: null,
-        totalValue: { $sum: { $multiply: ["$items.soldPrice", "$items.qty"] } },
-        totalItems: { $sum: "$items.qty" },
+        totalValue: { $sum: { $multiply: ["$items.soldPrice", "$items.quantity"] } },
+        totalItems: { $sum: "$items.quantity" },
         avgPrice: { $avg: "$items.soldPrice" },
         minPrice: { $min: "$items.soldPrice" },
         maxPrice: { $max: "$items.soldPrice" }
