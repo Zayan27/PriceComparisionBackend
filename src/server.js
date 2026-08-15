@@ -15,6 +15,7 @@ import authRoutes from './routes/authRoutes.js';
 import ingestionRoutes from './routes/ingestionRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
+import vendorRoutes from './routes/vendorRoutes.js';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/invoices', ingestionRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/vendors', vendorRoutes);
 
 // ─── 404 Handler ────────────────────────────────────────────────────
 app.use((req, res) => {
