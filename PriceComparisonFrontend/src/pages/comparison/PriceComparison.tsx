@@ -33,6 +33,7 @@ const PriceComparison: React.FC = () => {
   const [data, setData] = useState<PriceComparisonItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   
   // Date filter state
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
@@ -46,13 +47,28 @@ const PriceComparison: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<PriceComparisonItem | null>(null);
 
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      // Only search if 3+ chars or cleared
+      if (searchText.length >= 3 || searchText === '') {
+        const sanitized = sanitizeSearch(searchText);
+        setDebouncedSearch(sanitized);
+        setCurrentPage(1); // Reset to page 1 on new search
+      }
+    }, 800);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchText]);
+
   const fetchComparison = useCallback(async (page = 1, limit = 15, search?: string, dates?: [string, string] | null) => {
     setLoading(true);
     try {
       const params: any = { page, limit };
       if (search) {
-        // Sanitize to avoid regex injection — use the unified 'search' param
-        params.search = sanitizeSearch(search);
+        params.search = search;
       }
       if (dates) {
         params.startDate = dates[0];
@@ -72,26 +88,8 @@ const PriceComparison: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchComparison(currentPage, pageSize, searchText, dateRange);
-  }, [currentPage, pageSize, fetchComparison]);
-
-  const handleSearch = (value: string) => {
-    const sanitized = sanitizeSearch(value);
-    setSearchText(sanitized);
-    setCurrentPage(1);
-    fetchComparison(1, pageSize, sanitized, dateRange);
-  };
-
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchText(value);
-    // Debounced instant search on typing
-    const sanitized = sanitizeSearch(value);
-    if (sanitized.length === 0) {
-      setCurrentPage(1);
-      fetchComparison(1, pageSize, '', dateRange);
-    }
-  };
+    fetchComparison(currentPage, pageSize, debouncedSearch, dateRange);
+  }, [currentPage, pageSize, debouncedSearch, dateRange, fetchComparison]);
 
   const handleDateChange = (_dates: any, dateStrings: [string, string]) => {
     const range = _dates ? dateStrings : null;
@@ -105,13 +103,38 @@ const PriceComparison: React.FC = () => {
     setDrawerVisible(true);
   };
 
-  const handleExportExcel = () => {
-    if (data.length === 0) {
-      message.warning('No data to export.');
-      return;
+  const handleExportExcel = async () => {
+    setLoading(true);
+    try {
+      // Fetch all records matching the current filter
+      const params: any = { 
+        page: 1, 
+        limit: 100000 
+      };
+      if (searchText) {
+        params.search = sanitizeSearch(searchText);
+      }
+      if (dateRange) {
+        params.startDate = dateRange[0];
+        params.endDate = dateRange[1];
+      }
+
+      const response = await getPriceComparison(params);
+      if (response.success && response.data && response.data.results) {
+        const allData = response.data.results;
+        if (allData.length === 0) {
+          message.warning('No data to export.');
+          return;
+        }
+        exportToExcel(allData);
+        message.success('Excel file downloaded!');
+      }
+    } catch (error) {
+      console.error('Failed to export full dataset', error);
+      message.error('Export failed');
+    } finally {
+      setLoading(false);
     }
-    exportToExcel(data);
-    message.success('Excel file downloaded!');
   };
 
   const handleExportPDF = () => {
@@ -227,27 +250,43 @@ const PriceComparison: React.FC = () => {
           <Title level={2} style={{ margin: 0 }}>Vendor Price Comparison</Title>
           <Text type="secondary">Compare prices across SS Distro, FLW TX, RAVE, and TouchTell for every product.</Text>
         </div>
-        <Button
-          type="primary"
-          icon={<FileExcelOutlined />}
-          onClick={handleExportExcel}
-          style={{ background: '#52c41a', borderColor: '#52c41a' }}
-          size="large"
-        >
-          Export to Excel
-        </Button>
+        <Space>
+          <Button
+            type="default"
+            icon={<FileExcelOutlined />}
+            onClick={() => {
+              if (data.length === 0) {
+                message.warning('No data to export.');
+                return;
+              }
+              exportToExcel(data);
+              message.success('Current page exported!');
+            }}
+            size="large"
+          >
+            Export Page
+          </Button>
+          <Button
+            type="primary"
+            icon={<FileExcelOutlined />}
+            onClick={handleExportExcel}
+            style={{ background: '#52c41a', borderColor: '#52c41a' }}
+            size="large"
+          >
+            Export All Matches
+          </Button>
+        </Space>
       </div>
 
       <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
-          <Input.Search
-            placeholder="Search by SKU or Product Name"
+          <Input
+            placeholder="Search by SKU or Product (min 3 chars)"
             allowClear
             value={searchText}
-            onChange={handleSearchInputChange}
-            onSearch={handleSearch}
+            onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 340 }}
-            enterButton={<SearchOutlined />}
+            prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
           />
           <Space>
             <FilterOutlined style={{ color: '#bfbfbf' }} />
