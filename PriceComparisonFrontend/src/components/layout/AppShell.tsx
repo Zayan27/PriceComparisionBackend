@@ -62,7 +62,21 @@ const AppShell: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        theme="light"
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          borderRight: '1px solid #f0f0f0',
+          zIndex: 100,
+        }}
+      >
         <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}>
           <Title level={4} style={{ margin: 0, color: '#1890ff', overflow: 'hidden', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
             {collapsed ? 'PA' : 'Price Analytics'}
@@ -77,7 +91,19 @@ const AppShell: React.FC = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: '0 24px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+        <Header
+          style={{
+            padding: '0 24px',
+            background: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #f0f0f0',
+            position: 'sticky',
+            top: 0,
+            zIndex: 99,
+          }}
+        >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -91,7 +117,7 @@ const AppShell: React.FC = () => {
             </div>
           </Dropdown>
         </Header>
-        <Content style={{ margin: '24px', background: '#fff', borderRadius: 8, padding: 24, overflow: 'auto' }}>
+        <Content style={{ margin: '24px', background: '#fff', borderRadius: 8, padding: 24, minHeight: 280 }}>
           <Outlet />
         </Content>
       </Layout>
