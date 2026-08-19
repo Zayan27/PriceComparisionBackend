@@ -40,7 +40,9 @@ export interface PriceComparisonResponse {
 }
 
 export const getPriceComparison = async (params: { 
-  sku?: string, 
+  sku?: string,
+  productName?: string,
+  search?: string,
   startDate?: string, 
   endDate?: string, 
   minQuotes?: number,

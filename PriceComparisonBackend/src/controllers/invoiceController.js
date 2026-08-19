@@ -1,6 +1,15 @@
 import Invoice from '../models/Invoice.js';
 
 /**
+ * Escape special regex characters in a user-supplied string.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * GET /api/invoices
  * Paginated invoice listing with filters.
  *
@@ -24,7 +33,8 @@ export const listInvoices = async (req, res, next) => {
     }
 
     if (serialNumber) {
-      filter.serialNumber = { $regex: serialNumber, $options: 'i' };
+      // Escape special regex characters to prevent regex injection
+      filter.serialNumber = { $regex: escapeRegex(serialNumber), $options: 'i' };
     }
 
     if (startDate || endDate) {

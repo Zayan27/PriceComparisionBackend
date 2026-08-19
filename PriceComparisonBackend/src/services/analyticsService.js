@@ -2,18 +2,31 @@ import Invoice from '../models/Invoice.js';
 import mongoose from 'mongoose';
 
 /**
+ * Escape special regex characters in a user-supplied string
+ * to prevent regex injection when used in MongoDB $regex.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Get cross-vendor price comparison for SKUs using MongoDB aggregation.
  *
  * @param {object} filters
- * @param {string}  [filters.sku]       - Filter by specific SKU/UPC
- * @param {string}  [filters.startDate] - Filter invoices from this date
- * @param {string}  [filters.endDate]   - Filter invoices up to this date
- * @param {number}  [filters.page=1]    - Page number for pagination
- * @param {number}  [filters.limit=20]  - Results per page
+ * @param {string}  [filters.sku]         - Filter by specific SKU/UPC
+ * @param {string}  [filters.productName] - Filter by product name
+ * @param {string}  [filters.search]      - Universal search (matches SKU or product name)
+ * @param {string}  [filters.startDate]   - Filter invoices from this date
+ * @param {string}  [filters.endDate]     - Filter invoices up to this date
+ * @param {number}  [filters.page=1]      - Page number for pagination
+ * @param {number}  [filters.limit=20]    - Results per page
  * @returns {Promise<{ results: Array, pagination: object }>}
  */
 export async function getPriceComparison(filters = {}) {
-  const { sku, startDate, endDate, page = 1, limit = 20 } = filters;
+  const { sku, productName, search, startDate, endDate, page = 1, limit = 20 } = filters;
 
   // ─── Build match stage ─────────────────────────────────────────────
   const matchStage = {};
@@ -26,8 +39,21 @@ export async function getPriceComparison(filters = {}) {
 
   // ─── Build item match after $unwind ────────────────────────────────
   const itemMatch = {};
-  if (sku) {
-    itemMatch['items.sku'] = { $regex: sku, $options: 'i' };
+
+  if (search) {
+    // Universal search: match either SKU or product name (escaped for regex safety)
+    const escaped = escapeRegex(search);
+    itemMatch.$or = [
+      { 'items.sku': { $regex: escaped, $options: 'i' } },
+      { 'items.productName': { $regex: escaped, $options: 'i' } },
+    ];
+  } else {
+    if (sku) {
+      itemMatch['items.sku'] = { $regex: escapeRegex(sku), $options: 'i' };
+    }
+    if (productName) {
+      itemMatch['items.productName'] = { $regex: escapeRegex(productName), $options: 'i' };
+    }
   }
 
   // ─── Aggregation Pipeline ─────────────────────────────────────────
@@ -41,7 +67,7 @@ export async function getPriceComparison(filters = {}) {
   // 2. Unwind items array
   pipeline.push({ $unwind: '$items' });
 
-  // 3. Filter by SKU (if provided)
+  // 3. Filter by SKU / product name / search (if provided)
   if (Object.keys(itemMatch).length > 0) {
     pipeline.push({ $match: itemMatch });
   }

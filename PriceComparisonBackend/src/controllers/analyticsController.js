@@ -4,14 +4,16 @@ import { getPriceComparison, getDashboardMetrics } from '../services/analyticsSe
  * GET /api/analytics/price-comparison
  * Cross-vendor SKU price comparison with filters.
  *
- * Query params: sku, startDate, endDate, page, limit
+ * Query params: sku, productName, search, startDate, endDate, page, limit
  */
 export const priceComparison = async (req, res, next) => {
   try {
-    const { sku, startDate, endDate, page, limit } = req.query;
+    const { sku, productName, search, startDate, endDate, page, limit } = req.query;
 
     const result = await getPriceComparison({
       sku,
+      productName,
+      search,
       startDate,
       endDate,
       page: page || 1,

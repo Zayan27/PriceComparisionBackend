@@ -18,6 +18,7 @@ const vendorSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    /** @deprecated Serial pattern matching is no longer used. Vendor is selected explicitly on upload. */
     serialPatterns: {
       type: [String],
       default: [],

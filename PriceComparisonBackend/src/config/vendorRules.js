@@ -1,47 +1,30 @@
 /**
- * Vendor identification rules.
+ * Vendor configuration.
  *
- * Each rule defines a vendor key, display name, and a match function
- * that tests whether a given serial number belongs to that vendor.
- *
- * To add a new vendor, simply append a new entry to this array.
- * The first matching rule wins, so order matters for overlapping prefixes.
+ * Defines the 4 primary vendors pre-configured in the system.
+ * Serial-range heuristics have been deprecated — vendor is now
+ * explicitly selected during invoice upload.
  */
 export const VENDOR_RULES = [
   {
-    vendorKey: 'vendor_b',
-    name: 'Vendor B',
-    description: 'Serial numbers starting with 8, 9, or 10',
-    serialPatterns: ['^8', '^9', '^10'],
-    match: (serial) => /^(8|9|10)/.test(String(serial)),
+    vendorKey: 'ss_distro',
+    name: 'SS Distro',
+    description: 'SS Distro vendor',
   },
   {
-    vendorKey: 'vendor_c',
-    name: 'Vendor C',
-    description: 'Serial numbers starting with 3',
-    serialPatterns: ['^3'],
-    match: (serial) => String(serial).startsWith('3'),
+    vendorKey: 'flw_tx',
+    name: 'FLW TX',
+    description: 'FLW TX vendor',
   },
   {
-    vendorKey: 'vendor_d',
-    name: 'Vendor D',
-    description: 'Serial numbers starting with 4',
-    serialPatterns: ['^4'],
-    match: (serial) => String(serial).startsWith('4'),
+    vendorKey: 'rave',
+    name: 'RAVE',
+    description: 'RAVE vendor',
   },
   {
-    vendorKey: 'vendor_a',
-    name: 'Vendor A',
-    description: 'Serial numbers starting with 5',
-    serialPatterns: ['^5'],
-    match: (serial) => String(serial).startsWith('5'),
-  },
-  {
-    vendorKey: 'vendor_e',
-    name: 'Vendor E',
-    description: 'Serial numbers starting with 6',
-    serialPatterns: ['^6'],
-    match: (serial) => String(serial).startsWith('6'),
+    vendorKey: 'touchtell',
+    name: 'TouchTell',
+    description: 'TouchTell vendor',
   },
 ];
 
